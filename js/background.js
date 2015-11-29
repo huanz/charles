@@ -1,23 +1,22 @@
-
 var Utils = {
-	isString: function (obj) {
-		return Object.prototype.toString.call(obj) === '[object String]';
-	},
-	getConfig: function (key, callback) {
+    isString: function(obj) {
+        return Object.prototype.toString.call(obj) === '[object String]';
+    },
+    getConfig: function(key, callback) {
 
-	},
-	setConfig: function () {
+    },
+    setConfig: function() {
 
-	},
-	requestFilter: {
-		urls: ['<all_urls>'],
-		tabId: null
-	},
-	cross: 0,
-	responseFilter: {
-		urls: ['<all_urls>'],
-		tabId: null
-	}
+    },
+    requestFilter: {
+        urls: ['<all_urls>'],
+        tabId: null
+    },
+    cross: 0,
+    responseFilter: {
+        urls: ['<all_urls>'],
+        tabId: null
+    }
 };
 
 // chrome.runtime.onMessage.addListener(function () {
@@ -38,11 +37,14 @@ var Utils = {
 // }, Utils.requestFilter, ['blocking', 'requestHeaders']);
 
 chrome.webRequest.onHeadersReceived.addListener(function(details) {
-	if (!Utils.cross) {
-		return {};
-	}
-	details.responseHeaders.push({name: 'Access-Control-Allow-Origin', value: '*'});
-	return {
-		responseHeaders: details.responseHeaders
-	}
+    if (!Utils.cross) {
+        return {};
+    }
+    details.responseHeaders.push({
+        name: 'Access-Control-Allow-Origin',
+        value: '*'
+    });
+    return {
+        responseHeaders: details.responseHeaders
+    }
 }, Utils.responseFilter, ['blocking', 'responseHeaders']);

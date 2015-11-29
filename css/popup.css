@@ -1,35 +1,36 @@
-body, h1{
-	margin: 0;
-	padding: 0;
+body,
+h1 {
+    margin: 0;
+    padding: 0;
 }
 
 body {
-	padding: 5px;
-	color: #333;
-	width: 300px;
+    padding: 5px;
+    color: #333;
+    width: 300px;
 }
 
 .hide {
-	display: none;
+    display: none;
 }
 
 .show {
-	display: block;
+    display: block;
 }
 
 .logo {
-	padding-left: 40px;
-	background: url(../img/icon-38.png) no-repeat;
+    padding-left: 40px;
+    background: url(../img/icon-38.png) no-repeat;
 }
 
 .title {
-	color: #eb4f38;
-	height: 40px;
+    color: #eb4f38;
+    height: 40px;
     line-height: 40px;
     font-size: 20px;
     border-bottom: 1px solid #eee;
 }
 
 .row {
-	margin-bottom: 10px;
+    margin-bottom: 10px;
 }
