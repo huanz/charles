@@ -1,0 +1,33 @@
+{
+  "manifest_version": 1,
+  "name": "Charles",
+  "version": "0.0.1",
+  "description": "Charles for chrome extension",
+  "background": {
+  	"scripts": ["js/background.js"]
+  },
+  "homepage_url":"http://charles.w3cboy.com/",
+  "browser_action": {
+    "default_icon": {
+      "19": "img/icon-19.png",
+      "38": "img/icon-38.png"
+    },
+    "default_title": "Charles",
+    "default_popup": "html/popup.html" 
+  },
+  "permissions": [
+    "tabs",
+    "<all_urls>",
+    "webRequestBlocking", 
+    "webRequest",
+    "storage"
+  ],
+  "icons": {
+    "16": "img/icon-16.png",
+    "48": "img/icon-48.png",
+    "128": "img/icon-128.png"
+  },
+  "options_page":"html/options.html",
+  "devtools_page": "html/devtools.html",
+  "update_url": "http://charles.w3cboy.com/update.xml"
+}
