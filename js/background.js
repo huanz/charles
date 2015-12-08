@@ -40,11 +40,20 @@ chrome.webRequest.onHeadersReceived.addListener(function(details) {
     if (!Utils.cross) {
         return {};
     }
-    details.responseHeaders.push({
+    var headers = details.responseHeaders;
+    var index;
+    for (var i = headers.length - 1; i >= 0; i--) {
+        if (headers[i].name.toLowerCase() === 'access-control-allow-origin') {
+            index = i;
+            break;
+        }
+    }
+    index === undefined ? headers.push({
         name: 'Access-Control-Allow-Origin',
         value: '*'
-    });
+    }) : headers[index].value = '*';
+
     return {
-        responseHeaders: details.responseHeaders
+        responseHeaders: headers
     }
 }, Utils.responseFilter, ['blocking', 'responseHeaders']);
