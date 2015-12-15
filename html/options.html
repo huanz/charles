@@ -3,8 +3,40 @@
 <head>
 	<meta charset="UTF-8">
 	<title>charles</title>
+    <link rel="stylesheet" href="../css/options.css">
 </head>
 <body>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Cache</th>
+                <th>Method</th>
+                <th>Url</th>
+                <th>Ip</th>
+                <th>Size</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody id="j-list"></tbody>
+    </table>
+    <script type="text/template" id="j-item">
+        <tr>
+            <td><%= name %></td>
+            <td><%= type %></td>
+            <td><%= statusCode %></td>
+            <td><%= fromCache %></td>
+            <td><%= method %></td>
+            <td><a href="<%= url %>" target="_blank"><%= url %></a></td>
+            <td><%= ip %></td>
+            <td><%= size %></td>
+            <td>修改</td>
+        </tr>
+    </script>
+    <script src="../js/lib/jquery-2.1.4.min.js"></script>
+    <script src="../js/config.js"></script>
 	<script src="../js/options.js"></script>
 </body>
 </html>

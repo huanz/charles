@@ -1,0 +1,37 @@
+
+
+table {
+    background-color: transparent;
+    margin-bottom: 1rem;
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+.table {
+    width: 100%;
+    max-width: 100%;
+}
+
+.table thead th {
+    text-align: left;
+    vertical-align: bottom;
+    border-bottom: 2px solid #eceeef;
+}
+.table td,
+.table th {
+    padding: .75rem;
+    line-height: 1.5;
+    vertical-align: top;
+}
+
+.table th {
+    border-top: 1px solid #eceeef;
+}
+
+.table td {
+    border-bottom: 1px solid #eceeef;
+}
+
+.table tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+}

@@ -1,24 +1,22 @@
 {
-  "manifest_version": 1,
+  "manifest_version": 2,
   "name": "Charles",
   "version": "0.0.1",
   "description": "Charles for chrome extension",
-  "background": {
-  	"scripts": ["js/background.js"]
-  },
   "homepage_url":"http://charles.w3cboy.com/",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "browser_action": {
     "default_icon": {
       "19": "img/icon-19.png",
       "38": "img/icon-38.png"
     },
     "default_title": "Charles",
-    "default_popup": "html/popup.html" 
+    "default_popup": "html/popup.html"
   },
   "permissions": [
     "tabs",
     "<all_urls>",
-    "webRequestBlocking", 
+    "webRequestBlocking",
     "webRequest",
     "storage"
   ],
