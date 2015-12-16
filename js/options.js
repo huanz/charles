@@ -42,6 +42,7 @@ $(function() {
                     return result;
                 }
                 var headers = details.responseHeaders;
+                console.log(details.requestId);
                 var url = _this.urlParse(details.url);
                 var data = {
                     tabId: details.tabId,

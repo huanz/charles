@@ -35,7 +35,22 @@ table {
 
 .table th.name {
     width: 200px;
+}
+
+.table td.name {
     cursor: pointer;
+}
+
+.table th.host {
+    width: 101px;
+}
+
+.table th.ip {
+    width: 91px;
+}
+
+.table th.size {
+    width: 50px;
 }
 
 .table td {
