@@ -56,43 +56,47 @@ table {
     height: 32px;
     margin-top: 1px;
     margin-right: 3px;
-    background-repeat: none;
+    background-repeat: no-repeat;
 }
 
 .script {
-
+    background-image: url(../img/script.png);
 }
 
 .stylesheet {
-
+    background-image: url(../img/stylesheet.png);
 }
 
 .svg {
-
+    background-image: url(../img/svg.png);
 }
 
 .xml {
-
+    background-image: url(../img/xml.png);
 }
 
 .html {
+    background-image: url(../img/html.png);
 }
 
 .json {
+    background-image: url(../img/json.png);
 }
 
 .image {
+    background-image: url(../img/image.png);
 }
 
 .font {
-
+    background-image: url(../img/font.png);
 }
 
 .audio {
+    background-image: url(../img/audio.png);
 }
 
 .video {
-
+    background-image: url(../img/video.png);
 }
 
 .other {

@@ -37,6 +37,10 @@ $(function() {
             }, conf.responseFilter, ['blocking', 'responseHeaders']);
 
             chrome.webRequest.onCompleted.addListener(function (details) {
+                var result = {};
+                if (details.url.startsWith('chrome-extension://')) {
+                    return result;
+                }
                 var headers = details.responseHeaders;
                 var url = _this.urlParse(details.url);
                 var data = {
@@ -53,7 +57,7 @@ $(function() {
                     type: _this.getHeader(headers, 'content-type', _this.typeFmt)
                 };
                 _this.render(data);
-                return {};
+                return result;
             }, conf.requestFilter, ['responseHeaders']);
         },
         urlParse: function (url) {
