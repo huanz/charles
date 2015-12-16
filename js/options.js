@@ -1,30 +1,8 @@
 $(function() {
     'use strict';
-    var types = {
-        'application/json': 'json',
-        'image/gif': 'gif',
-        'image/jpeg': 'jpg',
-        'image/png': 'png',
-        'image/svg+xml': 'svg',
-        'image/tiff': 'tif',
-        'image/vnd.adobe.photoshop': 'psd',
-        'image/webp': 'webp',
-        'image/x-icon': 'ico',
-        'image/x-ms-bmp': 'bmp',
-        'text/jsx': 'jsx',
-        'text/javascript': 'js',
-        'application/javascript': 'js',
-        'text/css': 'css',
-        'text/less': 'less',
-        'text/x-sass': 'sass',
-        'text/x-scss': 'scss',
-        'video/x-flv': 'flv',
-        'audio/mpeg': 'mp3'
-    };
-
     // var conf = Config.get();
     // var $doc = $(document);
-
+    var doc = document;
     var Charles = {
         init: function() {
             this.$list = $('#j-list');
@@ -34,7 +12,12 @@ $(function() {
         bindEvents: function() {
             var _this = this;
             var conf = Config.get();
-            var $doc = $(document);
+            // var $doc = $(document);
+
+            window.addEventListener('storage', function () {
+                conf = Config.get();
+            }, false);
+
             chrome.webRequest.onHeadersReceived.addListener(function (details) {
                 if (!conf.cross) {
                     return {};
@@ -55,9 +38,12 @@ $(function() {
 
             chrome.webRequest.onCompleted.addListener(function (details) {
                 var headers = details.responseHeaders;
+                var url = _this.urlParse(details.url);
                 var data = {
                     tabId: details.tabId,
-                    name: _this.getName(details.url),
+                    name: url.name,
+                    path: url.sub,
+                    host: url.host,
                     url: details.url,
                     method: details.method,
                     fromCache: details.fromCache,
@@ -70,11 +56,19 @@ $(function() {
                 return {};
             }, conf.requestFilter, ['responseHeaders']);
         },
-        getName: function (url) {
-            var parser = document.createElement('a');
+        urlParse: function (url) {
+            var result = {};
+            var parser = doc.createElement('a');
             parser.href = url;
-            var paths = parser.pathname.split('/');
-            return paths[paths.length - 1];
+            ['protocol', 'host', 'port', 'pathname', 'search', 'hash'].forEach(function (p) {
+                result[p] = parser[p];
+            });
+            var paths = result.pathname.split('/');
+            result.name = paths[paths.length - 1];
+            result.sub = result.pathname === ('/' + result.name) ? result.host : result.pathname;
+            result.name += result.search + result.hash;
+
+            return result;
         },
         getHeader: function (headers, type, iteratee) {
             var result = '';
@@ -97,7 +91,7 @@ $(function() {
             return size.toFixed(2) + ' ' + name[pos];
         },
         typeFmt: function (content) {
-            var types = ['svg', 'xml', 'html', 'javascript', 'json', 'image', 'font', 'audio', 'video'];
+            var types = ['svg', 'xml', 'html', 'script', 'json', 'image', 'font', 'audio', 'video'];
             var type = 'other';
             for (var i = 0; i < types.length; i++) {
                 if (content.indexOf(types[i]) > -1) {

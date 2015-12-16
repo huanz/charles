@@ -9,12 +9,13 @@
     <table class="table">
         <thead>
             <tr>
-                <th>Name</th>
+                <th class="name">Name</th>
                 <th>Type</th>
-                <th>Status</th>
+                <th class="status">Status</th>
                 <th>Cache</th>
                 <th>Method</th>
-                <th>Url</th>
+                <th class="url">Url</th>
+                <th>Host</th>
                 <th>Ip</th>
                 <th>Size</th>
                 <th>操作</th>
@@ -24,12 +25,17 @@
     </table>
     <script type="text/template" id="j-item">
         <tr>
-            <td><%= name %></td>
+            <td class="name" title="<%= url %>">
+                <div class="icon other"></div>
+                <%= name %>
+                <div class="subtitle"><%= path %></div>
+            </td>
             <td><%= type %></td>
             <td><%= statusCode %></td>
             <td><%= fromCache %></td>
             <td><%= method %></td>
-            <td><a href="<%= url %>" target="_blank"><%= url %></a></td>
+            <td><a href="<%= url %>" title="<%= url %>" target="_blank"><%= url %></a></td>
+            <td><%= host %></td>
             <td><%= ip %></td>
             <td><%= size %></td>
             <td>修改</td>
