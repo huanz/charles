@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="../css/options.css">
 </head>
 <body>
+    <div class="wrap">
     <table class="table">
         <thead>
             <tr>
@@ -14,8 +15,8 @@
                 <th class="status">Status</th>
                 <th>Cache</th>
                 <th>Method</th>
-                <th class="url">Url</th>
                 <th class="host">Host</th>
+                <th class="url">Url</th>
                 <th class="ip">Ip</th>
                 <th class="size">Size</th>
                 <th>操作</th>
@@ -23,7 +24,25 @@
         </thead>
         <tbody id="j-list"></tbody>
     </table>
-    <script type="text/template" id="j-item">
+    </div>
+    <div class="rules">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Type</th>
+                    <th style="width: 60%">Url</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="j-rules"></tbody>
+        </table>
+    </div>
+    <div id="j-view" class="view">
+        <div class="close"></div>
+        <input class="j-file" type="file">
+    </div>
+    <script type="text/template" id="j-tpl-request">
         <tr>
             <td class="name" title="<%= url %>">
                 <div class="icon <%= type %>"></div>
@@ -34,11 +53,25 @@
             <td><%= statusCode %></td>
             <td><%= fromCache %></td>
             <td><%= method %></td>
-            <td><a href="<%= url %>" title="<%= url %>" target="_blank"><%= url %></a></td>
             <td title="<%= host %>"><%= host %></td>
+            <td>
+                <a href="<%= url %>" title="<%= url %>" target="_blank"><%= url %></a>
+            </td>
             <td><%= ip %></td>
             <td><%= size %></td>
-            <td>修改</td>
+            <td><button class="btn j-add" data-id="<%= id %>">修改</button></td>
+        </tr>
+    </script>
+    <script type="text/template" id="j-tpl-rule">
+        <tr>
+            <td><input type="checkbox"/></td>
+            <td><%= type %></td>
+            <td><%= id %></td>
+            <td>
+                <button class="btn j-onoff" data-id="<%= id %>"><%= enable ? '关闭' : '开启' %></button>
+                <button class="btn j-edit" data-id="<%= id %>">修改</button>
+                <button class="btn j-del" data-id="<%= id %>">删除</button>
+            </td>
         </tr>
     </script>
     <script src="../js/lib/jquery-2.1.4.min.js"></script>

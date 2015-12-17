@@ -5,9 +5,15 @@ $(function() {
     var doc = document;
     var Charles = {
         init: function() {
+            var _this = this;
             this.$list = $('#j-list');
-            this.template = Util.template($('#j-item').html());
-            this.bindEvents();
+            this.tplReq = Util.template($('#j-tpl-request').html());
+            this.tplRule = Util.template($('#j-tpl-rule').html());
+            chrome.storage.local.get('rules', function (items) {
+                _this.rules = items.rules || {};
+                _this.bindEvents();
+                _this.renderRule();
+            });
         },
         bindEvents: function() {
             var _this = this;
@@ -17,6 +23,10 @@ $(function() {
             window.addEventListener('storage', function () {
                 conf = Config.get();
             }, false);
+
+            chrome.webRequest.onBeforeRequest.addListener(function (details) {
+                return _this.checkUrl(details.url);
+            }, conf.requestFilter, ['blocking', 'requestBody']);
 
             chrome.webRequest.onHeadersReceived.addListener(function (details) {
                 if (!conf.cross) {
@@ -44,6 +54,7 @@ $(function() {
                 var headers = details.responseHeaders;
                 var url = _this.urlParse(details.url);
                 var data = {
+                    id: url.host + url.pathname,
                     tabId: details.tabId,
                     name: url.name,
                     path: url.sub,
@@ -59,6 +70,35 @@ $(function() {
                 _this.render(data);
                 return result;
             }, conf.requestFilter, ['responseHeaders']);
+
+            var $view = $('#j-view');
+            this.$list.on('click', '.j-add', function (){
+                $view.data('id', $(this).data('id')).show();
+            });
+            $view.on('click', '.close', function () {
+                $view.hide();
+            }).on('change', '.j-file', function () {
+                var file = this.files[0];
+                var reader = new FileReader();
+                reader.onload = function () {
+                    _this.addRule($view.data('id'), reader.result, 'local');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            var rules = this.rules;
+            $('#j-rules').on('click', '.j-onoff', function () {
+                var $this = $(this);
+                var rule = rules[$this.data('id')];
+                rule.enable = !rule.enable;
+                _this._updateRules();
+                $this.text(rule.enable ? '关闭': '开启');
+            }).on('click', '.j-del', function () {
+                var $this = $(this);
+                delete rules[$this.data('id')];
+                _this._updateRules();
+                $this.closest('tr').remove();
+            });
         },
         urlParse: function (url) {
             var result = {};
@@ -110,10 +150,36 @@ $(function() {
             return type;
         },
         render: function (obj) {
-            this.$list.append(this.template(obj));
+            this.$list.append(this.tplReq(obj));
         },
         checkUrl: function (url) {
-
+            var result = {};
+            var parsed = this.urlParse(url);
+            var rule = this.rules[parsed.host + parsed.pathname];
+            if (rule && rule.enable) {
+                result.redirectUrl = rule.url
+            }
+            return result;
+        },
+        renderRule: function () {
+            var arr = [];
+            var rules = this.rules;
+            for(var i in rules){
+                arr.push(this.tplRule(rules[i]));
+            }
+            $('#j-rules').html(arr.join(''));
+        },
+        addRule: function (id, data, type) {
+            this.rules[id] = {
+                id: id,
+                url: data,
+                type: type,
+                enable: 1
+            };
+            this._updateRules();
+        },
+        _updateRules: function () {
+            chrome.storage.local.set({rules: this.rules});
         }
     };
 
