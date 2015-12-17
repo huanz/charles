@@ -42,7 +42,6 @@ $(function() {
                     return result;
                 }
                 var headers = details.responseHeaders;
-                console.log(details.requestId);
                 var url = _this.urlParse(details.url);
                 var data = {
                     tabId: details.tabId,
@@ -55,7 +54,7 @@ $(function() {
                     statusCode: details.statusCode,
                     ip: details.ip || '',
                     size: _this.getHeader(headers, 'content-length', _this.byteFmt),
-                    type: _this.getHeader(headers, 'content-type', _this.typeFmt)
+                    type: _this.getHeader(headers, 'content-type', _this.typeFmt) || 'other'
                 };
                 _this.render(data);
                 return result;
@@ -96,6 +95,7 @@ $(function() {
             return size.toFixed(2) + ' ' + name[pos];
         },
         typeFmt: function (content) {
+            // application/x-shockwave-flash
             var types = ['svg', 'xml', 'html', 'script', 'json', 'image', 'font', 'audio', 'video'];
             var type = 'other';
             for (var i = 0; i < types.length; i++) {
@@ -105,12 +105,15 @@ $(function() {
                 }
             };
             if (type === 'other' && /text\/(css|less|stylus|x-sass|x-scss)/.test(content)) {
-                type = 'stylesheet';
+                type = 'style';
             }
             return type;
         },
         render: function (obj) {
             this.$list.append(this.template(obj));
+        },
+        checkUrl: function (url) {
+
         }
     };
 
