@@ -82,12 +82,22 @@ table {
 }*/
 
 .table td .icon {
+    position: relative;
     float: left;
     width: 32px;
     height: 32px;
     margin-top: 1px;
     margin-right: 3px;
     background-repeat: no-repeat;
+}
+
+.icon img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    max-width: 20px;
+    max-height: 20px;
+    transform: translate3d(-50%, -50%, 0);
 }
 
 .script {
@@ -115,7 +125,8 @@ table {
 }
 
 .image {
-    background-image: url(../img/image.png);
+    background-image: url(../img/other.png);
+    /*background-image: url(../img/image.png);*/
 }
 
 .font {
@@ -172,7 +183,7 @@ table {
     right: 0;
     top: 5px;
     width: 50px;
-    font-size: 50px; 
+    font-size: 50px;
     color: #333;
     cursor: pointer;
 }
