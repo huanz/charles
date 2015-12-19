@@ -18,7 +18,8 @@
     "<all_urls>",
     "webRequestBlocking",
     "webRequest",
-    "storage"
+    "storage",
+    "unlimitedStorage"
   ],
   "icons": {
     "16": "img/icon-16.png",

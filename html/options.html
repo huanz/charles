@@ -30,8 +30,8 @@
             <thead>
                 <tr>
                     <th></th>
-                    <th>Type</th>
-                    <th style="width: 60%">Url</th>
+                    <th style="width: 60%">Rule</th>
+                    <th>Map</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -63,14 +63,14 @@
         </tr>
     </script>
     <script type="text/template" id="j-tpl-rule">
-        <tr>
+        <tr data-id="<%= id %>" data-type="<%= type %>">
             <td><input type="checkbox"/></td>
-            <td><%= type %></td>
             <td><%= id %></td>
+            <td><%= name %></td>
             <td>
-                <button class="btn j-onoff" data-id="<%= id %>"><%= enable ? '关闭' : '开启' %></button>
-                <button class="btn j-edit" data-id="<%= id %>">修改</button>
-                <button class="btn j-del" data-id="<%= id %>">删除</button>
+                <button class="btn j-onoff"><%= enable ? '关闭' : '开启' %></button>
+                <button class="btn j-edit">修改</button>
+                <button class="btn j-del">删除</button>
             </td>
         </tr>
     </script>

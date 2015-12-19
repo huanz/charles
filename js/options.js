@@ -3,14 +3,22 @@ $(function() {
     // var conf = Config.get();
     // var $doc = $(document);
     var doc = document;
+
     var Charles = {
+        _prefix: 'rules~',
         init: function() {
             var _this = this;
             this.$list = $('#j-list');
             this.tplReq = Util.template($('#j-tpl-request').html());
             this.tplRule = Util.template($('#j-tpl-rule').html());
-            chrome.storage.local.get('rules', function (items) {
-                _this.rules = items.rules || {};
+            chrome.storage.local.get(null, function (items) {
+                var result = {};
+                Util.keys(items).forEach(function (key) {
+                    if (key.startsWith(_this._prefix)) {
+                        result[key.replace(_this._prefix, '')] = items[key];
+                    }
+                });
+                _this.rules = result;
                 _this.bindEvents();
                 _this.renderRule();
             });
@@ -25,6 +33,7 @@ $(function() {
             }, false);
 
             chrome.webRequest.onBeforeRequest.addListener(function (details) {
+                console.log('ddd');
                 return _this.checkUrl(details.url);
             }, conf.requestFilter, ['blocking', 'requestBody']);
 
@@ -77,11 +86,18 @@ $(function() {
             });
             $view.on('click', '.close', function () {
                 $view.hide();
+                $view.find('.j-file').val('');
             }).on('change', '.j-file', function () {
                 var file = this.files[0];
                 var reader = new FileReader();
                 reader.onload = function () {
-                    _this.addRule($view.data('id'), reader.result, 'local');
+                    _this.changeRule('add', {
+                        id: $view.data('id'),
+                        url: reader.result,
+                        name: file.name,
+                        type: 'file',
+                        enable: 1
+                    });
                 };
                 reader.readAsDataURL(file);
             });
@@ -89,15 +105,14 @@ $(function() {
             var rules = this.rules;
             $('#j-rules').on('click', '.j-onoff', function () {
                 var $this = $(this);
-                var rule = rules[$this.data('id')];
+                var rule = rules[$this.closest('tr').data('id')];
                 rule.enable = !rule.enable;
-                _this._updateRules();
+                _this.updateRule('update', rule);
                 $this.text(rule.enable ? '关闭': '开启');
             }).on('click', '.j-del', function () {
-                var $this = $(this);
-                delete rules[$this.data('id')];
-                _this._updateRules();
-                $this.closest('tr').remove();
+                var $tr = $(this).closest('tr');
+                _this.changeRule('remove', $tr.data('id'));
+                $tr.remove();
             });
         },
         urlParse: function (url) {
@@ -157,7 +172,8 @@ $(function() {
             var parsed = this.urlParse(url);
             var rule = this.rules[parsed.host + parsed.pathname];
             if (rule && rule.enable) {
-                result.redirectUrl = rule.url
+                result.redirectUrl = rule.url;
+                console.log(result);
             }
             return result;
         },
@@ -169,17 +185,22 @@ $(function() {
             }
             $('#j-rules').html(arr.join(''));
         },
-        addRule: function (id, data, type) {
-            this.rules[id] = {
-                id: id,
-                url: data,
-                type: type,
-                enable: 1
-            };
-            this._updateRules();
+        changeRule: function (type, rule) {
+            if (type === 'remove') {
+                delete this.rules[rule];
+            } else {
+                this.rules[rule.id] = rule;
+            }
+            this.updateRule(type, rule);
         },
-        _updateRules: function () {
-            chrome.storage.local.set({rules: this.rules});
+        updateRule: function (type, rule) {
+            if (type === 'remove') {
+                chrome.storage.local.remove(this._prefix + rule);
+            } else {
+                var tmp = {};
+                tmp[this._prefix + rule.id] = rule;
+                chrome.storage.local.set(tmp);
+            }
         }
     };
 
