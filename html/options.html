@@ -40,7 +40,21 @@
     </div>
     <div id="j-view" class="view">
         <div class="close"></div>
-        <input class="j-file" type="file">
+        <div class="view-wrap">
+            <div class="view-tab">
+                <a class="active" href="#">JSON</a>
+                <a href="#">链接</a>
+                <a href="#">文件</a>
+                <!-- <a href="#">文本</a> -->
+            </div>
+            <div class="form-group tab-content">
+                <div id="jsoneditor" class="form-control active"></div>
+                <input class="form-control" type="url" placeholder="file:///Users/bukas/test.json or http://w3cboy.com/test.json">
+                <input class="form-control" type="file">
+                <!-- <textarea class="form-control" rows="10"></textarea> -->
+            </div>
+            <button class="btn j-save">保存</button>
+        </div>
     </div>
     <script type="text/template" id="j-tpl-request">
         <tr>
@@ -75,6 +89,7 @@
         </tr>
     </script>
     <script src="../js/lib/jquery-2.1.4.min.js"></script>
+    <script src="../js/lib/jsoneditor.min.js"></script>
     <script src="../js/config.js"></script>
 	<script src="../js/options.js"></script>
 </body>
