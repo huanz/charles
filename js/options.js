@@ -3,7 +3,6 @@ $(function() {
     // var conf = Config.get();
     // var $doc = $(document);
     var doc = document;
-
     var Charles = {
         _prefix: 'rules~',
         init: function() {
@@ -94,6 +93,11 @@ $(function() {
                 }
             });
 
+            var closeView = function () {
+                $view.hide();
+                $fields.val('');
+            };
+
             // jsoneditor
             var editor = new JSONEditor(doc.getElementById('jsoneditor'), {
                 mode: 'text'
@@ -102,10 +106,7 @@ $(function() {
                 'msg': 'success',
                 'list': []
             });
-            $view.on('click', '.close', function() {
-                $view.hide();
-                $view.find('.form-control').val('');
-            }).on('change', '.j-file', function() {
+            $view.on('click', '.close', closeView).on('change', '.j-file', function() {
                 var file = this.files[0];
                 var reader = new FileReader();
                 reader.onload = function() {
@@ -143,7 +144,14 @@ $(function() {
                 }
                 if (index === 1) {
                     var url = $input.val().trim();
-                    if (url.startsWith('file://') || url.startsWith('http://') || url.startsWith('https://')) {
+                    if (url.startsWith('file://')) {
+                        _this.getFile(url, function (res) {
+                            result.url = res;
+                            result.type = 'url';
+                            result.name = url;
+                            _this.changeRule('add', result);
+                        });
+                    } else if (url.startsWith('http://') || url.startsWith('https://')) {
                         result.url = url;
                         result.type = 'url';
                         result.name = url;
@@ -161,6 +169,7 @@ $(function() {
                     };
                     reader.readAsDataURL(file);
                 }
+                closeView();
             });
 
             var rules = this.rules;
@@ -233,8 +242,7 @@ $(function() {
             var parsed = this.urlParse(url);
             var rule = this.rules[parsed.host + parsed.pathname];
             if (rule && rule.enable) {
-                var url = rule.url;
-                result.redirectUrl = url.startsWith('file://') ? this.getFile(url) : url;
+                result.redirectUrl = rule.url;
             }
             return result;
         },
@@ -242,9 +250,17 @@ $(function() {
             var arr = [];
             var rules = this.rules;
             for (var i in rules) {
-                arr.push(this.tplRule(rules[i]));
+                arr.push(this.renderOneRule(rules[i]));
             }
             $('#j-rules').html(arr.join(''));
+        },
+        renderOneRule: function (rule, tag) {
+            var str = this.tplRule(rule);
+            if (tag) {
+                $('#j-rules').append(str);
+            }else {
+                return str;
+            }
         },
         changeRule: function(type, rule) {
             if (type === 'remove') {
@@ -262,15 +278,24 @@ $(function() {
                 tmp[this._prefix + rule.id] = rule;
                 chrome.storage.local.set(tmp);
             }
+            if (type === 'add') {
+                this.renderOneRule(rule, 1);
+            }
         },
-        getFile: function (url) {
-            var URL = window.URL || window.webkitURL; 
+        getFile: function (url, callback) {
             var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, false);
+            xhr.open('GET', url, true);
             xhr.responseType = 'blob';
+            xhr.onload = function() {
+                if (this.status === 0) {
+                    var reader = new FileReader();
+                    reader.onload = function() {
+                        callback(reader.result);
+                    };
+                    reader.readAsDataURL(this.response);
+                }
+            };
             xhr.send();
-            var blob = xhr.response;
-            return blob ? URL.createObjectURL(blob) ? '';
         }
     };
 
