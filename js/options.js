@@ -10,7 +10,7 @@ $(function() {
             this.$list = $('#j-list');
             this.tplReq = Util.template($('#j-tpl-request').html());
             this.tplRule = Util.template($('#j-tpl-rule').html());
-            chrome.storage.local.get(null, function(items) {
+            chrome.storage.local.get(null, function (items) {
                 var result = {};
                 Util.keys(items).forEach(function(key) {
                     if (key.startsWith(_this._prefix)) {
@@ -27,20 +27,20 @@ $(function() {
             var conf = Config.get();
             // var $doc = $(document);
 
-            window.addEventListener('storage', function() {
+            window.addEventListener('storage', function () {
                 conf = Config.get();
             }, false);
 
-            chrome.webRequest.onBeforeRequest.addListener(function(details) {
+            chrome.webRequest.onBeforeRequest.addListener(function (details) {
                 return _this.checkUrl(details.url);
             }, conf.requestFilter, ['blocking', 'requestBody']);
 
-            chrome.webRequest.onHeadersReceived.addListener(function(details) {
+            chrome.webRequest.onHeadersReceived.addListener(function (details) {
                 if (!conf.cross) {
                     return {};
                 }
                 var headers = details.responseHeaders;
-                var index = _this.getHeader(headers, 'access-control-allow-origin', function(value, i) {
+                var index = _this.getHeader(headers, 'access-control-allow-origin', function (value, i) {
                     return i;
                 });
                 index === '' ? headers.push({
@@ -53,7 +53,8 @@ $(function() {
                 }
             }, conf.responseFilter, ['blocking', 'responseHeaders']);
 
-            chrome.webRequest.onCompleted.addListener(function(details) {
+            chrome.webRequest.onCompleted.addListener(function (details) {
+                console.log(details.requestId);
                 var result = {};
                 if (details.url.startsWith('chrome-extension://')) {
                     return result;
