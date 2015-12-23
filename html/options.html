@@ -41,17 +41,21 @@
     <div id="j-view" class="view">
         <div class="close"></div>
         <div class="view-wrap">
+            <div class="view-rule">规则：<span class="j-rule"></span></div>
             <div class="view-tab">
                 <a class="active" href="#">JSON</a>
                 <a href="#">链接</a>
                 <a href="#">文件</a>
-                <!-- <a href="#">文本</a> -->
+                <a href="#">Headers</a>
             </div>
             <div class="form-group tab-content">
-                <div id="jsoneditor" class="form-control active"></div>
+                <textarea id="j-edit" class="form-control active" rows="10"></textarea>
                 <input class="form-control" type="url" placeholder="file:///Users/bukas/test.json or http://w3cboy.com/test.json">
                 <input class="form-control" type="file">
-                <!-- <textarea class="form-control" rows="10"></textarea> -->
+                <div class="view-header">
+                    <p>Request Headers</p>
+                    <p>Query String</p>
+                </div>
             </div>
             <button class="btn j-save">保存</button>
         </div>
@@ -89,7 +93,7 @@
         </tr>
     </script>
     <script src="../js/lib/jquery-2.1.4.min.js"></script>
-    <script src="../js/lib/jsoneditor.min.js"></script>
+    <script src="../js/autoIndent.js"></script>
     <script src="../js/config.js"></script>
 	<script src="../js/options.js"></script>
 </body>

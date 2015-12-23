@@ -5,12 +5,13 @@ $(function() {
     var doc = document;
     var Charles = {
         _prefix: 'rules~',
+        _headers: {},
         init: function() {
             var _this = this;
             this.$list = $('#j-list');
             this.tplReq = Util.template($('#j-tpl-request').html());
             this.tplRule = Util.template($('#j-tpl-rule').html());
-            chrome.storage.local.get(null, function (items) {
+            chrome.storage.local.get(null, function(items) {
                 var result = {};
                 Util.keys(items).forEach(function(key) {
                     if (key.startsWith(_this._prefix)) {
@@ -23,24 +24,64 @@ $(function() {
             });
         },
         bindEvents: function() {
+            this.conf = Config.get();
+            this._chromeEvents();
+            this._domEvents();
+        },
+        _chromeEvents: function () {
             var _this = this;
-            var conf = Config.get();
-            // var $doc = $(document);
+            var conf = this.conf;
 
-            window.addEventListener('storage', function () {
-                conf = Config.get();
-            }, false);
+            // 标签页关闭
+            chrome.tabs.onRemoved.addListener(function(tabId) {
+                if (conf.requestFilter.tabId === tabId) {
+                    Config.set('requestFilter.tabId', null);
+                }
+                if (conf.requestFilter.tabId === tabId) {
+                    Config.set('responseFilter.tabId', null);
+                }
+            });
 
+            // 发起请求前
             chrome.webRequest.onBeforeRequest.addListener(function (details) {
-                return _this.checkUrl(details.url);
+                var rule = _this.checkUrl(details.url);
+                if (rule && rule.enable) {
+                    return {
+                        redirectUrl: rule.url
+                    };
+                } else {
+                    return {};
+                }
             }, conf.requestFilter, ['blocking', 'requestBody']);
 
+            // 发送请求头前
+            chrome.webRequest.onBeforeSendHeaders.addListener(function (details) {
+                var rule = _this.checkUrl(details.url);
+                if (rule && rule.type === 'header' && rule.enable) {
+                    return {
+                        requestHeaders: rule.headers
+                    };
+                } else {
+                    return {};
+                }
+            }, conf.requestFilter, ['blocking', 'requestHeaders']);
+
+            chrome.webRequest.onSendHeaders.addListener(function (details) {
+                var url = _this.urlParse(details.url);
+                var id = url.host + url.pathname;
+                _this._headers[id] = {
+                    id: id,
+                    headers: details.requestHeaders
+                };
+            }, conf.requestFilter, ['requestHeaders']);
+
+            // 接收到请求头
             chrome.webRequest.onHeadersReceived.addListener(function (details) {
                 if (!conf.cross) {
                     return {};
                 }
                 var headers = details.responseHeaders;
-                var index = _this.getHeader(headers, 'access-control-allow-origin', function (value, i) {
+                var index = _this.getHeader(headers, 'access-control-allow-origin', function(value, i) {
                     return i;
                 });
                 index === '' ? headers.push({
@@ -53,11 +94,10 @@ $(function() {
                 }
             }, conf.responseFilter, ['blocking', 'responseHeaders']);
 
+            // 请求完成
             chrome.webRequest.onCompleted.addListener(function (details) {
-                console.log(details.requestId);
-                var result = {};
                 if (details.url.startsWith('chrome-extension://')) {
-                    return result;
+                    return {};
                 }
                 var headers = details.responseHeaders;
                 var url = _this.urlParse(details.url);
@@ -76,37 +116,50 @@ $(function() {
                     type: _this.getHeader(headers, 'content-type', _this.typeFmt) || 'other'
                 };
                 _this.render(data);
-                return result;
             }, conf.requestFilter, ['responseHeaders']);
+
+        },
+        _domEvents: function () {
+            var _this = this;
+
+            window.addEventListener('storage', function() {
+                _this.conf = Config.get();
+            }, false);
+
 
             var $view = $('#j-view');
             this.$list.on('click', '.j-add', function() {
-                $view.data('id', $(this).data('id')).show();
+                var rule = $(this).data('id');
+                $view.find('.j-rule').text(rule);
+                $view.data('id', rule).show();
             });
 
-            var $fields = $view.find('.form-control');
+            // var $fields = $view.find('.form-control');
+            var $tabs = $view.find('.tab-content').children();
             $view.find('.view-tab').on('click', 'a', function() {
                 var $this = $(this);
                 if (!$this.hasClass('active')) {
                     $this.siblings().removeClass('active');
                     $this.addClass('active');
-                    $fields.removeClass('active').eq($this.index()).addClass('active');
+                    $tabs.removeClass('active').eq($this.index()).addClass('active');
                 }
             });
 
-            var closeView = function () {
+            var closeView = function() {
                 $view.hide();
-                $fields.val('');
+                $view.find('.form-control').val('');
             };
 
             // jsoneditor
-            var editor = new JSONEditor(doc.getElementById('jsoneditor'), {
-                mode: 'text'
-            }, {
-                'no': 0,
-                'msg': 'success',
-                'list': []
+            var editor = new autoIndent({
+                textarea: doc.getElementById('j-edit'),
+                json: {
+                    no: 0,
+                    msg: 'success',
+                    list: []
+                }
             });
+
             $view.on('click', '.close', closeView).on('change', '.j-file', function() {
                 var file = this.files[0];
                 var reader = new FileReader();
@@ -121,8 +174,8 @@ $(function() {
                 };
                 reader.readAsDataURL(file);
             }).on('click', '.j-save', function() {
-                var $input = $fields.filter('.active');
-                var index = $input.index();
+                var $field = $tabs.filter('.active');
+                var index = $field.index();
                 var result = {
                     id: $view.data('id'),
                     enable: 1
@@ -144,9 +197,9 @@ $(function() {
                     }
                 }
                 if (index === 1) {
-                    var url = $input.val().trim();
+                    var url = $field.val().trim();
                     if (url.startsWith('file://')) {
-                        _this.getFile(url, function (res) {
+                        _this.getFile(url, function(res) {
                             result.url = res;
                             result.type = 'url';
                             result.name = url;
@@ -160,7 +213,7 @@ $(function() {
                     }
                 }
                 if (index === 2) {
-                    var file = $input[0].files[0];
+                    var file = $field[0].files[0];
                     var reader = new FileReader();
                     reader.onload = function() {
                         result.url = reader.result;
@@ -238,14 +291,9 @@ $(function() {
         render: function(obj) {
             this.$list.append(this.tplReq(obj));
         },
-        checkUrl: function(url) {
-            var result = {};
+        checkUrl: function (url) {
             var parsed = this.urlParse(url);
-            var rule = this.rules[parsed.host + parsed.pathname];
-            if (rule && rule.enable) {
-                result.redirectUrl = rule.url;
-            }
-            return result;
+            return this.rules[parsed.host + parsed.pathname];
         },
         renderRule: function() {
             var arr = [];
@@ -255,11 +303,11 @@ $(function() {
             }
             $('#j-rules').html(arr.join(''));
         },
-        renderOneRule: function (rule, tag) {
+        renderOneRule: function(rule, tag) {
             var str = this.tplRule(rule);
             if (tag) {
                 $('#j-rules').append(str);
-            }else {
+            } else {
                 return str;
             }
         },
@@ -283,7 +331,7 @@ $(function() {
                 this.renderOneRule(rule, 1);
             }
         },
-        getFile: function (url, callback) {
+        getFile: function(url, callback) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
             xhr.responseType = 'blob';
@@ -302,52 +350,3 @@ $(function() {
 
     Charles.init();
 });
-
-
-
-
-
-
-// chrome.webRequest.onBeforeRequest.addListener(function(details) {
-//     console.log('onBeforeRequest', details);
-//     return {};
-// }, conf.requestFilter, ['blocking', 'requestBody']);
-
-// chrome.webRequest.onBeforeSendHeaders.addListener(function(details) {
-//  console.log('onBeforeSendHeaders', details);
-//  var headers = details;
-//  return {
-//      requestHeaders: headers
-//  };
-// }, conf.requestFilter, ['blocking', 'requestHeaders']);
-//
-//
-//
-
-// window.addEventListener('storage', function () {
-//     conf = Config.get();
-// }, false);
-
-// // 标签页关闭
-// chrome.tabs.onRemoved.addListener(function (tabId) {
-//     if (conf.requestFilter.tabId === tabId) {
-//         Config.set('requestFilter.tabId', null);
-//     }
-//     if (conf.requestFilter.tabId === tabId) {
-//         Config.set('responseFilter.tabId', null);
-//     }
-// });
-
-// chrome.webRequest.onBeforeRequest.addListener(function(details) {
-//     console.log('onBeforeRequest', details);
-//     return {};
-// }, conf.requestFilter, ['blocking', 'requestBody']);
-//
-// chrome.webRequest.onBeforeSendHeaders.addListener(function (details) {
-//  console.log('onBeforeSendHeaders', details);
-//  return {};
-//  var headers = details;
-//  return {
-//      requestHeaders: headers
-//  };
-// }, conf.requestFilter, ['blocking', 'requestHeaders']);
