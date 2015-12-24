@@ -96,26 +96,25 @@ $(function() {
 
             // 请求完成
             chrome.webRequest.onCompleted.addListener(function (details) {
-                if (details.url.startsWith('chrome-extension://')) {
-                    return {};
+                if (details.url.startsWith('http://') || details.url.startsWith('https://')) {
+                    var headers = details.responseHeaders;
+                    var url = _this.urlParse(details.url);
+                    var data = {
+                        id: url.host + url.pathname,
+                        tabId: details.tabId,
+                        name: url.name,
+                        path: url.sub,
+                        host: url.host,
+                        url: details.url,
+                        method: details.method,
+                        fromCache: details.fromCache,
+                        statusCode: details.statusCode,
+                        ip: details.ip || '',
+                        size: _this.getHeader(headers, 'content-length', _this.byteFmt),
+                        type: _this.getHeader(headers, 'content-type', _this.typeFmt) || 'other'
+                    };
+                    _this.render(data);
                 }
-                var headers = details.responseHeaders;
-                var url = _this.urlParse(details.url);
-                var data = {
-                    id: url.host + url.pathname,
-                    tabId: details.tabId,
-                    name: url.name,
-                    path: url.sub,
-                    host: url.host,
-                    url: details.url,
-                    method: details.method,
-                    fromCache: details.fromCache,
-                    statusCode: details.statusCode,
-                    ip: details.ip || '',
-                    size: _this.getHeader(headers, 'content-length', _this.byteFmt),
-                    type: _this.getHeader(headers, 'content-type', _this.typeFmt) || 'other'
-                };
-                _this.render(data);
             }, conf.requestFilter, ['responseHeaders']);
 
         },
@@ -126,7 +125,6 @@ $(function() {
                 _this.conf = Config.get();
             }, false);
 
-
             var $view = $('#j-view');
             this.$list.on('click', '.j-add', function() {
                 var rule = $(this).data('id');
@@ -134,7 +132,6 @@ $(function() {
                 $view.data('id', rule).show();
             });
 
-            // var $fields = $view.find('.form-control');
             var $tabs = $view.find('.tab-content').children();
             $view.find('.view-tab').on('click', 'a', function() {
                 var $this = $(this);
@@ -147,7 +144,7 @@ $(function() {
 
             var closeView = function() {
                 $view.hide();
-                $view.find('.form-control').val('');
+                $view.find('input.form-control').val('');
             };
 
             // jsoneditor
