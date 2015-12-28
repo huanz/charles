@@ -65,10 +65,7 @@ $(function() {
                 if (_this.checkUrl(details.url)) {
                     var url = _this.urlParse(details.url);
                     var id = url.host + url.pathname;
-                    _this._headers[id] = {
-                        id: id,
-                        headers: details.requestHeaders
-                    };
+                    _this._headers[id] = details.requestHeaders;
                 }
             }, conf.requestFilter, ['requestHeaders']);
 
@@ -95,7 +92,6 @@ $(function() {
                     _this.parseResponse(details);
                 }
             }, conf.requestFilter, ['responseHeaders']);
-
         },
         _domEvents: function () {
             var _this = this;
@@ -108,6 +104,16 @@ $(function() {
             this.$list.on('click', '.j-add', function() {
                 var rule = $(this).data('id');
                 $view.find('.j-rule').text(rule);
+
+                var header = _this._headers[rule];
+                if (header && header.length) {
+                    var str = '<p>Request Headers</p>';
+                    header.forEach(function (item) {
+                        str += '<div><strong>' + item.name + '：</strong>' + item.value + '</div>';
+                    });
+                    $('#j-header').html(str);
+                }
+
                 $view.data('id', rule).show();
             });
 
@@ -242,7 +248,7 @@ $(function() {
             var result = {};
             var parser = doc.createElement('a');
             parser.href = url;
-            ['protocol', 'host', 'port', 'pathname', 'search', 'hash'].forEach(function(p) {
+            ['protocol', 'host', 'port', 'pathname', 'search', 'hash'].forEach(function (p) {
                 result[p] = parser[p];
             });
             var paths = result.pathname.split('/');
