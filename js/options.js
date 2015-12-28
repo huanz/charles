@@ -31,7 +31,6 @@ $(function() {
         _chromeEvents: function () {
             var _this = this;
             var conf = this.conf;
-
             // 标签页关闭
             chrome.tabs.onRemoved.addListener(function(tabId) {
                 if (conf.requestFilter.tabId === tabId) {
@@ -49,8 +48,6 @@ $(function() {
                     return {
                         redirectUrl: rule.url
                     };
-                } else {
-                    return {};
                 }
             }, conf.requestFilter, ['blocking', 'requestBody']);
 
@@ -61,59 +58,41 @@ $(function() {
                     return {
                         requestHeaders: rule.headers
                     };
-                } else {
-                    return {};
                 }
             }, conf.requestFilter, ['blocking', 'requestHeaders']);
 
             chrome.webRequest.onSendHeaders.addListener(function (details) {
-                var url = _this.urlParse(details.url);
-                var id = url.host + url.pathname;
-                _this._headers[id] = {
-                    id: id,
-                    headers: details.requestHeaders
-                };
+                if (_this.checkUrl(details.url)) {
+                    var url = _this.urlParse(details.url);
+                    var id = url.host + url.pathname;
+                    _this._headers[id] = {
+                        id: id,
+                        headers: details.requestHeaders
+                    };
+                }
             }, conf.requestFilter, ['requestHeaders']);
 
             // 接收到请求头
             chrome.webRequest.onHeadersReceived.addListener(function (details) {
-                if (!conf.cross) {
-                    return {};
-                }
-                var headers = details.responseHeaders;
-                var index = _this.getHeader(headers, 'access-control-allow-origin', function(value, i) {
-                    return i;
-                });
-                index === '' ? headers.push({
-                    name: 'Access-Control-Allow-Origin',
-                    value: '*'
-                }) : headers[index].value = '*';
-
-                return {
-                    responseHeaders: headers
+                if (conf.cross) {
+                    var headers = details.responseHeaders;
+                    var index = _this.getHeader(headers, 'access-control-allow-origin', function(value, i) {
+                        return i;
+                    });
+                    index === '' ? headers.push({
+                        name: 'Access-Control-Allow-Origin',
+                        value: '*'
+                    }) : headers[index].value = '*';
+                    return {
+                        responseHeaders: headers
+                    };
                 }
             }, conf.responseFilter, ['blocking', 'responseHeaders']);
 
             // 请求完成
             chrome.webRequest.onCompleted.addListener(function (details) {
-                if (details.url.startsWith('http://') || details.url.startsWith('https://')) {
-                    var headers = details.responseHeaders;
-                    var url = _this.urlParse(details.url);
-                    var data = {
-                        id: url.host + url.pathname,
-                        tabId: details.tabId,
-                        name: url.name,
-                        path: url.sub,
-                        host: url.host,
-                        url: details.url,
-                        method: details.method,
-                        fromCache: details.fromCache,
-                        statusCode: details.statusCode,
-                        ip: details.ip || '',
-                        size: _this.getHeader(headers, 'content-length', _this.byteFmt),
-                        type: _this.getHeader(headers, 'content-type', _this.typeFmt) || 'other'
-                    };
-                    _this.render(data);
+                if (_this.checkUrl(details.url)) {
+                    _this.parseResponse(details);
                 }
             }, conf.requestFilter, ['responseHeaders']);
 
@@ -236,6 +215,29 @@ $(function() {
                 $tr.remove();
             });
         },
+        parseResponse: function (details) {
+            var headers = details.responseHeaders;
+            var parsedUrl = this.urlParse(details.url);
+            var data = {
+                id: parsedUrl.host + parsedUrl.pathname,
+                tabId: details.tabId,
+                name: parsedUrl.name,
+                path: parsedUrl.sub,
+                host: parsedUrl.host,
+                url: details.url,
+                method: details.method,
+                fromCache: details.fromCache,
+                statusCode: details.statusCode,
+                ip: details.ip || '',
+                size: this.getHeader(headers, 'content-length', this.byteFmt),
+                type: this.getHeader(headers, 'content-type', this.typeFmt) || 'other'
+            };
+            // image特殊处理下url
+            if (data.type === 'image') {
+                data.src = data.url + (data.url.indexOf('?') === -1 ? '?' : '&') + '_fromcharles=1';
+            }
+            this.render(data);
+        },
         urlParse: function(url) {
             var result = {};
             var parser = doc.createElement('a');
@@ -289,8 +291,13 @@ $(function() {
             this.$list.append(this.tplReq(obj));
         },
         checkUrl: function (url) {
-            var parsed = this.urlParse(url);
-            return this.rules[parsed.host + parsed.pathname];
+            if (url.startsWith('http://') || url.startsWith('https://')) {
+                var parsed = this.urlParse(url);
+                if (parsed.search.indexOf('_fromcharles=1') === -1) {
+                    return this.rules[parsed.host + parsed.pathname] || {};
+                }
+            }
+            return false;
         },
         renderRule: function() {
             var arr = [];

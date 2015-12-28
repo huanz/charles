@@ -3,13 +3,11 @@
     var Store = root.localStorage;
     var defaults = {
         requestFilter: {
-            urls: ['<all_urls>'],
-            tabId: null
+            urls: ['<all_urls>']
         },
         cross: 0,
         responseFilter: {
-            urls: ['<all_urls>'],
-            tabId: null
+            urls: ['<all_urls>']
         }
     };
     var Config = {
