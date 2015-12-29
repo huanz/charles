@@ -7,25 +7,29 @@
 </head>
 <body>
     <div class="wrap">
-    <table class="table">
-        <thead>
-            <tr>
-                <th class="name">Name</th>
-                <th>Type</th>
-                <th class="status">Status</th>
-                <th>Cache</th>
-                <th>Method</th>
-                <th class="host">Host</th>
-                <th class="url">Url</th>
-                <th class="ip">Ip</th>
-                <th class="size">Size</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody id="j-list"></tbody>
-    </table>
+        <div class="header clearfix">
+            <h1 class="left">Charles</h1>
+            <a id="j-toggle-rule" class="right" href="#">查看规则</a>
+        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="name">Name</th>
+                    <th>Type</th>
+                    <th class="status">Status</th>
+                    <th>Cache</th>
+                    <th>Method</th>
+                    <th class="host">Host</th>
+                    <th class="url">Url</th>
+                    <th class="ip">Ip</th>
+                    <th class="size">Size</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody id="j-list"></tbody>
+        </table>
     </div>
-    <div class="rules">
+    <div id="j-rule-view" class="rules" style="display: none">
         <table class="table">
             <thead>
                 <tr>
@@ -49,7 +53,7 @@
                 <a href="#">Headers</a>
             </div>
             <div class="form-group tab-content">
-                <textarea id="j-edit" class="form-control active" rows="10"></textarea>
+                <textarea id="j-edit" class="form-control active" rows="17"></textarea>
                 <input class="form-control" type="url" placeholder="file:///Users/bukas/test.json or http://w3cboy.com/test.json">
                 <input class="form-control" type="file">
                 <div class="view-header" id="j-header">

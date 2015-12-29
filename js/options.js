@@ -1,7 +1,5 @@
 $(function() {
     'use strict';
-    // var conf = Config.get();
-    // var $doc = $(document);
     var doc = document;
     var Charles = {
         _prefix: 'rules~',
@@ -136,9 +134,19 @@ $(function() {
             var editor = new autoIndent({
                 textarea: doc.getElementById('j-edit'),
                 json: {
-                    no: 0,
-                    msg: 'success',
-                    list: []
+                    'no': 0,
+                    'msg': 'success',
+                    'list|20': [{
+                        'id': '@id',
+                        'title': '@ctitle',
+                        'name': '@cname',
+                        'email': '@email',
+                        'image': '@image(150x150)',
+                        'url': '@url',
+                        'status': '@range(1, 2, 3)',
+                        'content': '@cparagraph',
+                        'date': '@now("T")'
+                    }]
                 }
             });
 
@@ -162,38 +170,42 @@ $(function() {
                     id: $view.data('id'),
                     enable: 1
                 };
+                // json
                 if (index === 0) {
                     var text = editor.get();
                     if (text) {
-                        var mimeType = 'text/plain';
+                        var mimeType = '';
+                        result.type = 'text';
+                        result.input = text;
                         if (Util.isObject(text)) {
                             mimeType = 'application/json';
-                            text = JSON.stringify(text);
+                            text = JSON.stringify(Mock.mock(text));
                             result.name = 'json';
                         } else {
+                            mimeType = 'text/plain';
                             result.name = text;
                         }
                         result.url = 'data:' + mimeType + '; utf-8,' + encodeURIComponent(text);
-                        result.type = 'text';
                         _this.changeRule('add', result);
                     }
                 }
+                // 链接
                 if (index === 1) {
                     var url = $field.val().trim();
+                    result.input = url;
+                    result.type = 'url';
+                    result.name = url;
                     if (url.startsWith('file://')) {
                         _this.getFile(url, function(res) {
                             result.url = res;
-                            result.type = 'url';
-                            result.name = url;
                             _this.changeRule('add', result);
                         });
                     } else if (url.startsWith('http://') || url.startsWith('https://')) {
                         result.url = url;
-                        result.type = 'url';
-                        result.name = url;
                         _this.changeRule('add', result);
                     }
                 }
+                // 文件
                 if (index === 2) {
                     var file = $field[0].files[0];
                     var reader = new FileReader();
@@ -206,6 +218,10 @@ $(function() {
                     reader.readAsDataURL(file);
                 }
                 closeView();
+            });
+
+            $('#j-toggle-rule').on('click', function () {
+                $('#j-rule-view').toggle();
             });
 
             var rules = this.rules;
@@ -355,6 +371,23 @@ $(function() {
                 }
             };
             xhr.send();
+        },
+        fileExt: function (filename) {
+            var result;
+            if (!filename) {
+                return '';
+            }
+            if (/^\..+$/.test(filename) && filename.match(/\./g).length === 1) {
+                result = filename.substring(1);
+            } else {
+                var parts = filename.split('.');
+                if (parts.length === 1 || (parts[0] === '' && parts.length === 2)) {
+                    return '';
+                } else {
+                    result = parts.pop();
+                }
+            }
+            return result.toLowerCase();
         }
     };
 

@@ -1,4 +1,4 @@
-body,p{
+body,p,h1{
     margin: 0;
     padding: 0;
 }
@@ -38,10 +38,33 @@ label {
     margin-bottom: .5rem;
 }
 
+.left {
+    float: left !important;
+}
+
+.right {
+    float: right !important;
+}
+
+.clearfix:before,.clearfix:after {
+    content: " ";
+    display: table;
+}
+
+.clearfix:after {
+    clear: both;
+}
+
 .wrap {
     width: 100%;
     height: 100%;
     overflow: auto;
+}
+
+.header {
+    background: #ff583f;
+    padding: 15px 5px;
+    color: #fff;
 }
 
 .table {
