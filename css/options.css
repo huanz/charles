@@ -9,7 +9,9 @@ html,body{
 }
 
 body {
+    font-family: Tahoma, Arial, "Helvetica Neue", "Hiragino Sans GB", Simsun, sans-self;
     overflow: hidden;
+    color: #767676;
 }
 
 a {
@@ -62,9 +64,8 @@ label {
 }
 
 .header {
-    background: #ff583f;
+    background: #fafafa;
     padding: 15px 5px;
-    color: #fff;
 }
 
 .table {
@@ -253,9 +254,8 @@ label {
     word-break: break-all;
 }
 
-.view-rule span {
-    color: #008000;
-    font-style: italic;
+.view-rule input {
+    width: 470px;
 }
 
 .label {

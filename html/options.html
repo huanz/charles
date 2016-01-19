@@ -6,11 +6,11 @@
     <link rel="stylesheet" href="../css/options.css">
 </head>
 <body>
+    <div class="header clearfix">
+        <h1 class="left">Charles</h1>
+        <a id="j-toggle-rule" class="right" href="#">查看规则</a>
+    </div>
     <div class="wrap">
-        <div class="header clearfix">
-            <h1 class="left">Charles</h1>
-            <a id="j-toggle-rule" class="right" href="#">查看规则</a>
-        </div>
         <table class="table">
             <thead>
                 <tr>
@@ -45,7 +45,7 @@
     <div id="j-view" class="view">
         <div class="close"></div>
         <div class="view-wrap">
-            <div class="view-rule">规则：<span class="j-rule"></span></div>
+            <div class="view-rule">规则：<input class="form-control j-rule"/></div>
             <div class="view-tab">
                 <a class="active" href="#">JSON</a>
                 <a href="#">链接</a>

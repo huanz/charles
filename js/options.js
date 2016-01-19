@@ -1,17 +1,17 @@
-$(function() {
+$(function () {
     'use strict';
     var doc = document;
     var Charles = {
         _prefix: 'rules~',
         _headers: {},
-        init: function() {
+        init: function () {
             var _this = this;
             this.$list = $('#j-list');
             this.tplReq = Util.template($('#j-tpl-request').html());
             this.tplRule = Util.template($('#j-tpl-rule').html());
-            chrome.storage.local.get(null, function(items) {
+            chrome.storage.local.get(null, function (items) {
                 var result = {};
-                Util.keys(items).forEach(function(key) {
+                Util.keys(items).forEach(function (key) {
                     if (key.startsWith(_this._prefix)) {
                         result[key.replace(_this._prefix, '')] = items[key];
                     }
@@ -21,7 +21,7 @@ $(function() {
                 _this.renderRule();
             });
         },
-        bindEvents: function() {
+        bindEvents: function () {
             this.conf = Config.get();
             this._chromeEvents();
             this._domEvents();
@@ -30,7 +30,7 @@ $(function() {
             var _this = this;
             var conf = this.conf;
             // 标签页关闭
-            chrome.tabs.onRemoved.addListener(function(tabId) {
+            chrome.tabs.onRemoved.addListener(function (tabId) {
                 if (conf.requestFilter.tabId === tabId) {
                     Config.set('requestFilter.tabId', null);
                 }
@@ -71,7 +71,7 @@ $(function() {
             chrome.webRequest.onHeadersReceived.addListener(function (details) {
                 if (conf.cross) {
                     var headers = details.responseHeaders;
-                    var index = _this.getHeader(headers, 'access-control-allow-origin', function(value, i) {
+                    var index = _this.getHeader(headers, 'access-control-allow-origin', function (value, i) {
                         return i;
                     });
                     index === '' ? headers.push({
@@ -94,14 +94,14 @@ $(function() {
         _domEvents: function () {
             var _this = this;
 
-            window.addEventListener('storage', function() {
+            window.addEventListener('storage', function () {
                 _this.conf = Config.get();
             }, false);
 
             var $view = $('#j-view');
-            this.$list.on('click', '.j-add', function() {
+            this.$list.on('click', '.j-add', function () {
                 var rule = $(this).data('id');
-                $view.find('.j-rule').text(rule);
+                $view.find('.j-rule').val(rule);
 
                 var header = _this._headers[rule];
                 if (header && header.length) {
@@ -116,7 +116,7 @@ $(function() {
             });
 
             var $tabs = $view.find('.tab-content').children();
-            $view.find('.view-tab').on('click', 'a', function() {
+            $view.find('.view-tab').on('click', 'a', function () {
                 var $this = $(this);
                 if (!$this.hasClass('active')) {
                     $this.siblings().removeClass('active');
@@ -125,7 +125,7 @@ $(function() {
                 }
             });
 
-            var closeView = function() {
+            var closeView = function () {
                 $view.hide();
                 $view.find('input.form-control').val('');
             };
@@ -150,10 +150,10 @@ $(function() {
                 }
             });
 
-            $view.on('click', '.close', closeView).on('change', '.j-file', function() {
+            $view.on('click', '.close', closeView).on('change', '.j-file', function () {
                 var file = this.files[0];
                 var reader = new FileReader();
-                reader.onload = function() {
+                reader.onload = function () {
                     _this.changeRule('add', {
                         id: $view.data('id'),
                         url: reader.result,
@@ -163,11 +163,11 @@ $(function() {
                     });
                 };
                 reader.readAsDataURL(file);
-            }).on('click', '.j-save', function() {
+            }).on('click', '.j-save', function () {
                 var $field = $tabs.filter('.active');
                 var index = $field.index();
                 var result = {
-                    id: $view.data('id'),
+                    id: $view.find('.j-rule').val().trim(),
                     enable: 1
                 };
                 // json
@@ -196,7 +196,7 @@ $(function() {
                     result.type = 'url';
                     result.name = url;
                     if (url.startsWith('file://')) {
-                        _this.getFile(url, function(res) {
+                        _this.getFile(url, function (res) {
                             result.url = res;
                             _this.changeRule('add', result);
                         });
@@ -209,7 +209,7 @@ $(function() {
                 if (index === 2) {
                     var file = $field[0].files[0];
                     var reader = new FileReader();
-                    reader.onload = function() {
+                    reader.onload = function () {
                         result.url = reader.result;
                         result.name = file.name;
                         result.type = 'file';
@@ -225,13 +225,13 @@ $(function() {
             });
 
             var rules = this.rules;
-            $('#j-rules').on('click', '.j-onoff', function() {
+            $('#j-rules').on('click', '.j-onoff', function () {
                 var $this = $(this);
                 var rule = rules[$this.closest('tr').data('id')];
                 rule.enable = !rule.enable;
                 _this.updateRule('update', rule);
                 $this.text(rule.enable ? '关闭' : '开启');
-            }).on('click', '.j-del', function() {
+            }).on('click', '.j-del', function () {
                 var $tr = $(this).closest('tr');
                 _this.changeRule('remove', $tr.data('id'));
                 $tr.remove();
@@ -260,7 +260,7 @@ $(function() {
             }
             this.render(data);
         },
-        urlParse: function(url) {
+        urlParse: function (url) {
             var result = {};
             var parser = doc.createElement('a');
             parser.href = url;
@@ -274,7 +274,7 @@ $(function() {
 
             return result;
         },
-        getHeader: function(headers, type, iteratee) {
+        getHeader: function (headers, type, iteratee) {
             var result = '';
             for (var i = headers.length - 1; i >= 0; i--) {
                 if (headers[i].name.toLowerCase() === type) {
@@ -284,7 +284,7 @@ $(function() {
             };
             return result;
         },
-        byteFmt: function(size) {
+        byteFmt: function (size) {
             size = +size;
             var name = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
             var pos = 0;
@@ -294,7 +294,7 @@ $(function() {
             }
             return size.toFixed(2) + ' ' + name[pos];
         },
-        typeFmt: function(content) {
+        typeFmt: function (content) {
             // application/x-shockwave-flash
             var types = ['svg', 'xml', 'html', 'script', 'json', 'image', 'font', 'audio', 'video'];
             var type = 'other';
@@ -309,7 +309,7 @@ $(function() {
             }
             return type;
         },
-        render: function(obj) {
+        render: function (obj) {
             this.$list.append(this.tplReq(obj));
         },
         checkUrl: function (url) {
@@ -321,7 +321,7 @@ $(function() {
             }
             return false;
         },
-        renderRule: function() {
+        renderRule: function () {
             var arr = [];
             var rules = this.rules;
             for (var i in rules) {
@@ -329,7 +329,7 @@ $(function() {
             }
             $('#j-rules').html(arr.join(''));
         },
-        renderOneRule: function(rule, tag) {
+        renderOneRule: function (rule, tag) {
             var str = this.tplRule(rule);
             if (tag) {
                 $('#j-rules').append(str);
@@ -337,7 +337,7 @@ $(function() {
                 return str;
             }
         },
-        changeRule: function(type, rule) {
+        changeRule: function (type, rule) {
             if (type === 'remove') {
                 delete this.rules[rule];
             } else {
@@ -345,7 +345,7 @@ $(function() {
             }
             this.updateRule(type, rule);
         },
-        updateRule: function(type, rule) {
+        updateRule: function (type, rule) {
             if (type === 'remove') {
                 chrome.storage.local.remove(this._prefix + rule);
             } else {
@@ -357,14 +357,14 @@ $(function() {
                 this.renderOneRule(rule, 1);
             }
         },
-        getFile: function(url, callback) {
+        getFile: function (url, callback) {
             var xhr = new XMLHttpRequest();
             xhr.open('GET', url, true);
             xhr.responseType = 'blob';
-            xhr.onload = function() {
+            xhr.onload = function () {
                 if (this.status === 0) {
                     var reader = new FileReader();
-                    reader.onload = function() {
+                    reader.onload = function () {
                         callback(reader.result);
                     };
                     reader.readAsDataURL(this.response);
