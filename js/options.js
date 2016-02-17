@@ -4,6 +4,7 @@ $(function () {
     var Charles = {
         _prefix: 'rules~',
         _headers: {},
+        _requests: {},
         init: function () {
             var _this = this;
             this.$list = $('#j-list');
@@ -60,24 +61,38 @@ $(function () {
             }, conf.requestFilter, ['blocking', 'requestHeaders']);
 
             chrome.webRequest.onSendHeaders.addListener(function (details) {
+                var headers = details.requestHeaders;
+                if (conf.cross) {
+                    /**
+                     * 记录Origin，跨域带cookie用
+                     */
+                    _this._requests[details.requestId] = _this.getHeader(headers, 'origin', function (value) {
+                        return value;
+                    });
+                }
                 if (_this.checkUrl(details.url)) {
                     var url = _this.urlParse(details.url);
                     var id = url.host + url.pathname;
-                    _this._headers[id] = details.requestHeaders;
+                    _this._headers[id] = headers;
                 }
             }, conf.requestFilter, ['requestHeaders']);
 
             // 接收到请求头
             chrome.webRequest.onHeadersReceived.addListener(function (details) {
                 if (conf.cross) {
+                    var origin = _this._requests[details.requestId];
+                    delete _this._requests[details.requestId];
                     var headers = details.responseHeaders;
                     var index = _this.getHeader(headers, 'access-control-allow-origin', function (value, i) {
                         return i;
                     });
                     index === '' ? headers.push({
                         name: 'Access-Control-Allow-Origin',
-                        value: '*'
-                    }) : headers[index].value = '*';
+                        value: origin
+                    }, {
+                        name: 'Access-Control-Allow-Credentials',
+                        value: 'true'
+                    }) : headers[index].value = origin;
                     return {
                         responseHeaders: headers
                     };
