@@ -3,19 +3,20 @@
     var Store = root.localStorage;
     var defaults = {
         requestFilter: {
-            urls: ['<all_urls>']
+            urls: ['http://*/*', 'https://*/*', 'file://*/*', 'ftp://*/*']
         },
         cross: 0,
         responseFilter: {
-            urls: ['<all_urls>']
+            urls: ['http://*/*', 'https://*/*', 'file://*/*', 'ftp://*/*']
         }
     };
     var Config = {
-        init: function(data) {
-            this._data = data || defaults;
-            this.save();
-        },
         get: function() {
+            this._data = JSON.parse(Store.getItem('config'));
+            if (!this._data) {
+                this._data = defaults;
+                this.save();
+            }
             return this._data;
         },
         set: function(key, value) {
@@ -32,9 +33,6 @@
             return Store.setItem('config', JSON.stringify(this._data));
         }
     };
-
-    Config.init(JSON.parse(Store.getItem('config')));
-
 
     var isObject = function(obj) {
         var type = typeof obj;

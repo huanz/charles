@@ -26,6 +26,9 @@
     "48": "img/icon-48.png",
     "128": "img/icon-128.png"
   },
+  "background": {
+    "scripts": ["js/config.js", "js/background.js"]
+  },
   "options_page":"html/options.html",
   "devtools_page": "html/devtools.html",
   "update_url": "http://charles.w3cboy.com/update.xml"

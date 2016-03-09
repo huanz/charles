@@ -4,7 +4,6 @@ $(function () {
     var Charles = {
         _prefix: 'rules~',
         _headers: {},
-        _requests: {},
         init: function () {
             var _this = this;
             this.$list = $('#j-list');
@@ -30,15 +29,6 @@ $(function () {
         _chromeEvents: function () {
             var _this = this;
             var conf = this.conf;
-            // 标签页关闭
-            chrome.tabs.onRemoved.addListener(function (tabId) {
-                if (conf.requestFilter.tabId === tabId) {
-                    Config.set('requestFilter.tabId', null);
-                }
-                if (conf.requestFilter.tabId === tabId) {
-                    Config.set('responseFilter.tabId', null);
-                }
-            });
 
             // 发起请求前
             chrome.webRequest.onBeforeRequest.addListener(function (details) {
@@ -61,43 +51,12 @@ $(function () {
             }, conf.requestFilter, ['blocking', 'requestHeaders']);
 
             chrome.webRequest.onSendHeaders.addListener(function (details) {
-                var headers = details.requestHeaders;
-                if (conf.cross) {
-                    /**
-                     * 记录Origin，跨域带cookie用
-                     */
-                    _this._requests[details.requestId] = _this.getHeader(headers, 'origin', function (value) {
-                        return value;
-                    });
-                }
                 if (_this.checkUrl(details.url)) {
                     var url = _this.urlParse(details.url);
                     var id = url.host + url.pathname;
-                    _this._headers[id] = headers;
+                    _this._headers[id] = details.requestHeaders;
                 }
             }, conf.requestFilter, ['requestHeaders']);
-
-            // 接收到请求头
-            chrome.webRequest.onHeadersReceived.addListener(function (details) {
-                if (conf.cross) {
-                    var origin = _this._requests[details.requestId];
-                    delete _this._requests[details.requestId];
-                    var headers = details.responseHeaders;
-                    var index = _this.getHeader(headers, 'access-control-allow-origin', function (value, i) {
-                        return i;
-                    });
-                    index === '' ? headers.push({
-                        name: 'Access-Control-Allow-Origin',
-                        value: origin
-                    }, {
-                        name: 'Access-Control-Allow-Credentials',
-                        value: 'true'
-                    }) : headers[index].value = origin;
-                    return {
-                        responseHeaders: headers
-                    };
-                }
-            }, conf.responseFilter, ['blocking', 'responseHeaders']);
 
             // 请求完成
             chrome.webRequest.onCompleted.addListener(function (details) {

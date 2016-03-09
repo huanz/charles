@@ -25,7 +25,6 @@ chrome.tabs.query({active: true}, function(tab) {
             } else {
                 Config.set('cross', 0);
             }
-
         } else if (type === 'filter') {
             // 跨域请求过滤设置
             Config.set('requestFilter.tabId', value === 1 ? tabId : null);
