@@ -9,27 +9,50 @@
             /**
              * 记录Origin，跨域带cookie用
              */
-            _requests[details.requestId] = getHeader(details.requestHeaders, 'origin', function (value) {
+            var origin = getHeader(details.requestHeaders, 'origin', function (value) {
                 return value;
             });
+            var headers = getHeader(details.requestHeaders, 'access-control-allow-headers', function (value) {
+                return value;
+            });
+            var method = getHeader(details.requestHeaders, 'access-control-allow-method', function (value) {
+                return value;
+            });
+            _requests[details.requestId] = {
+                origin: origin,
+                headers: headers,
+                method: method
+            };
         }
     }, conf.requestFilter, ['requestHeaders']);
 
     chrome.webRequest.onHeadersReceived.addListener(function (details) {
         if (conf.cross) {
-            var origin = _requests[details.requestId];
-            delete _requests[details.requestId];
+            var data = _requests[details.requestId];
             var headers = details.responseHeaders;
             var index = getHeader(headers, 'access-control-allow-origin', function (value, i) {
                 return i;
             });
             index === '' ? headers.push({
                 name: 'Access-Control-Allow-Origin',
-                value: origin
+                value: data.origin
             }, {
                 name: 'Access-Control-Allow-Credentials',
                 value: 'true'
-            }) : headers[index].value = origin;
+            }) : headers[index].value = data.origin;
+            if (data.headers) {
+                headers.push({
+                    name: 'Access-Control-Allow-Headers',
+                    value: data.headers
+                });
+            }
+            if (data.method) {
+                headers.push({
+                    name: 'Access-Control-Allow-Methods',
+                    value: data.method
+                });
+            }
+            delete _requests[details.requestId];
             return {
                 responseHeaders: headers
             };
